@@ -14,30 +14,31 @@ Claudia Maria Ciurea – Disertație 2025 – Aplicație pentru managementul ene
 
 ### 1. Clonează repository-ul
 
-```bash```
+```bash
 git clone https://github.com/ciureaclaudia/Disertatie_Energy_app.git
 cd Disertatie_Energy_app 
-
+```
 ### 2.Backend
 
-```bash```
+```bash
 cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 # Rulează serverul
 python manage.py runserver
+```
 
 ### 3. Frontend
 
-```bash```
+```bash
 cd frontend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 # Rulează aplicația
 streamlit run app.py
-
+```
 
 ### Tehnologii folosite
 
