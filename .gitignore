@@ -10,7 +10,8 @@ build/
 # =============== ENVIRONMENT ===============
 .env
 *.env
-venv/
+frontend/venv/
+backend/venv/
 env/
 
 # =============== DJANGO ===============
