@@ -1,0 +1,60 @@
+# =============== PYTHON ===============
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# =============== ENVIRONMENT ===============
+.env
+*.env
+venv/
+env/
+
+# =============== DJANGO ===============
+db.sqlite3
+*.log
+media/
+staticfiles/
+static/
+
+# Django migrations (opțional, dacă nu vrei să le incluzi)
+**/migrations/
+# SAU doar exclude fișierele `__pycache__` din migrații:
+# **/migrations/__pycache__/
+
+# =============== IDE ===============
+.idea/
+.vscode/
+
+# =============== NODE/STREAMLIT ===============
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Streamlit cache and settings
+.streamlit/config.toml
+.streamlit/*.yaml
+.streamlit/*.json
+
+# =============== OS Specific ===============
+.DS_Store
+Thumbs.db
+
+# =============== TESTS ===============
+.coverage
+htmlcov/
+*.cover
+*.py,cover
+.cache/
+nosetests.xml
+coverage.xml
+*.mo
+
+# =============== OTHER ===============
+*.sqlite3
+*.bak
+*.swp
+*.tmp
