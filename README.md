@@ -14,12 +14,13 @@ Claudia Maria Ciurea – Disertație 2025 – Aplicație pentru managementul ene
 
 ### 1. Clonează repository-ul
 
-```bash
+```bash```
 git clone https://github.com/ciureaclaudia/Disertatie_Energy_app.git
-cd Disertatie_Energy_app
+cd Disertatie_Energy_app 
 
-### 2. Backend
-```bash
+### 2.Backend
+
+```bash```
 cd backend
 python -m venv venv
 venv\Scripts\activate
@@ -28,6 +29,8 @@ pip install -r requirements.txt
 python manage.py runserver
 
 ### 3. Frontend
+
+```bash```
 cd frontend
 python -m venv venv
 venv\Scripts\activate
@@ -36,7 +39,7 @@ pip install -r requirements.txt
 streamlit run app.py
 
 
-## Tehnologii folosite
+### Tehnologii folosite
 
 Backend: Django, Django Rest Framework, PostgreSQL
 
