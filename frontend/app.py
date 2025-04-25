@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-from frontend_pages import home, production, consumption, clients, statistics
+from frontend_pages import home, production, consumption, clients, statistics, map_page
 
 # === Configura pagina ===
 st.set_page_config(
@@ -12,45 +12,67 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-        /* Ascunde complet bara de sus Deploy, Rerun, etc */
-        #MainMenu, header, footer {
-            visibility: hidden !important;
-            height: 0px !important;
-        }
+    /* Ascunde bara Streamlit de sus și jos */
+    #MainMenu, header, footer {
+        visibility: hidden;
+    }
 
-        /*  Micșorează spațiul dintre header și conținut */
-        .block-container {
-            padding-top: 1rem !important;
-        }
+    /* Container principal mai compact */
+    .block-container {
+        padding-top: 1rem !important;
+    }
 
-         <style>
-    /* Extinde sidebar-ul pe toată înălțimea ferestrei */
+    /* Sidebar pe toată înălțimea fără scroll */
     section[data-testid="stSidebar"] {
         height: 100vh !important;
-        overflow-y: auto !important;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        overflow-y: hidden !important;
+        background-color: #f5f5f5 !important;
+        padding: 1rem !important;
     }
 
-    /* Meniu mai compact */
-    .css-1lcbmhc {
-        flex-grow: 1;
+    /* Elimină containerul alb și shadow */
+    div[data-testid="stSidebarNav"] {
+        background-color: transparent !important;
+        box-shadow: none !important;
     }
 
-    /* Iconul din switch */
-    .stToggleSwitch [data-testid="stMarkdownContainer"] {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    /* Elimină padding-ul implicit din option_menu */
+    .css-1n76uvr, .css-13hxz1l {
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
     }
-    </style>
+
+    /* Option_menu styling */
+    .nav-link {
+        font-size: 16px;
+        color: #333 !important;
+        padding: 10px 16px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+    }
+
+    .nav-link:hover {
+        background-color: #e0e0e0 !important;
+    }
+
+    .nav-link.active {
+        background-color: #ff4b4b !important;
+        color: white !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 
+
+
 # afisare lista clienti
 API_CLIENTS = "http://127.0.0.1:8000/api/clients/"
+
+# # get coordonate clienti
+# API_CLIENTS_COORDINATES="http://127.0.0.1:8000/api/clients/coordinates/"
 
 # === Tema / Mod vizual ===
 with st.sidebar:
@@ -58,7 +80,7 @@ with st.sidebar:
 
     selected = option_menu(
         menu_title="🌿 Meniu VPP",
-        options=["Acasă", "Producție", "Consum", "Clienți", "Statistici"],
+        options=["Acasă", "Producție", "Consum", "Clienți", "Statistici","Hartă"],
         icons=["house", "battery-charging", "lightning", "people", "bar-chart-line"],
         default_index=0,
         orientation="vertical"
@@ -97,5 +119,7 @@ elif selected == "Clienți":
     clients.show(API_CLIENTS, primary)
 elif selected == "Statistici":
     statistics.show(primary)
+elif selected == "Hartă":
+    map_page.show(API_CLIENTS)
 
 

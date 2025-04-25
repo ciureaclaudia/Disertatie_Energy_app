@@ -1,6 +1,10 @@
 # pages/production.py
 
 import streamlit as st
+import pandas as pd
+import requests
+import folium
+from streamlit_folium import st_folium
 
 def show():
     st.subheader("🔋 Producție din surse regenerabile")

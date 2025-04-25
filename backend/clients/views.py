@@ -6,17 +6,36 @@ from datetime import datetime
 from .models import Client,EnergyReading
 from .serializers import ClientSerializer,EnergyReadingSerializer
 from .utils import generate_synthetic_readings_for_client
+from rest_framework.decorators import action
 
 import pytz
+
+
 
 # in a view= This is where we gather the information we need to send back a proper response.
 # Django views are Python functions that take http requests and return http response, like HTML documents
 # Views use utils — not the other way around
+# the views are endpoints 
 
 
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
+
+    # @action(detail=False, methods=["get"], url_path="coordinates")
+    # def get_coordinates(self, request):
+    #     clients = self.get_queryset()
+    #     data = [
+    #         {
+    #             "id": client.id,
+    #             "name": client.name,
+    #             "lat": client.lat,
+    #             "long": client.long,
+    #             "location": client.location
+    #         }
+    #         for client in clients
+    #     ]
+    #     return Response(data)
 
 class EnergyReadingViewSet(viewsets.ModelViewSet):
     queryset = EnergyReading.objects.all()
