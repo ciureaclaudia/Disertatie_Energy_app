@@ -76,10 +76,9 @@ API_CLIENTS = "http://127.0.0.1:8000/api/clients/"
 
 # === Tema / Mod vizual ===
 with st.sidebar:
-    st.image("https://img.icons8.com/emoji/96/solar-panel.png", width=80)
 
     selected = option_menu(
-        menu_title="🌿 Meniu VPP",
+        menu_title="Meniu VPP",
         options=["Acasă", "Producție", "Consum", "Clienți", "Statistici","Hartă"],
         icons=["house", "battery-charging", "lightning", "people", "bar-chart-line"],
         default_index=0,

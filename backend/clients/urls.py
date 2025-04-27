@@ -4,11 +4,14 @@ from .views import ClientViewSet, EnergyReadingViewSet, GenerateSyntheticDataVie
 
 router = DefaultRouter()
 router.register(r'clients', ClientViewSet, basename='client')
-router.register(r'readings', EnergyReadingViewSet, basename='reading')
+# router.register(r'readings', EnergyReadingViewSet, basename='reading')
 
 urlpatterns = [
     path('', include(router.urls)),
 
+    # Path special pentru readings filtrate pe client
+    path('clients/<int:client_id>/readings/', EnergyReadingViewSet.as_view({'get': 'list'}), name='reading-list'),
+    
     # Extra (non-ViewSet) endpoints
     path('clients/<int:pk>/generate_data/', GenerateSyntheticDataView.as_view(), name='generate-data'),
     path('clients/<int:pk>/delete_readings/', DeleteClientReadingsView.as_view(), name='delete-readings'),

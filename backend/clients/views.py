@@ -22,20 +22,6 @@ class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
-    # @action(detail=False, methods=["get"], url_path="coordinates")
-    # def get_coordinates(self, request):
-    #     clients = self.get_queryset()
-    #     data = [
-    #         {
-    #             "id": client.id,
-    #             "name": client.name,
-    #             "lat": client.lat,
-    #             "long": client.long,
-    #             "location": client.location
-    #         }
-    #         for client in clients
-    #     ]
-    #     return Response(data)
 
 class EnergyReadingViewSet(viewsets.ModelViewSet):
     queryset = EnergyReading.objects.all()

@@ -6,15 +6,52 @@ import requests
 import altair as alt
 from fpdf import FPDF
 import io
+from frontend_pages.addclients import show_add_client_form
 
 def show(API_CLIENTS, primary):
     st.subheader("📋 Lista Clienților")
+
+    # ➕ ADD CLIENT FORM
+    show_add_client_form(API_CLIENTS)
+
+    # Dacă tocmai s-a adăugat un client nou, reîncarcăm lista
+    if st.session_state.get("refresh_clients", False):
+        st.success("🔄 Lista de clienți a fost actualizată!")
+        st.session_state["refresh_clients"] = False  # Resetam flag-ul
+
     try:
         response = requests.get(API_CLIENTS)
         if response.status_code == 200:
             clients = response.json()
             df = pd.DataFrame(clients)
-            st.dataframe(df)
+   
+            # st.dataframe(df)
+
+            cols = st.columns(2)
+
+            for i, (_, row) in enumerate(df.iterrows()):
+                with cols[i % 2]:
+                    st.markdown(f"""
+                    <div style='
+                        background: linear-gradient(135deg, #9cd9b2, #ffffff);
+                        border: 1px solid #e6e6e6;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin: 10px 5px;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+                        font-family: "Segoe UI", sans-serif;
+                    '>
+                        <div style='font-size: 20px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;'>
+                            {row['name']}
+                        </div>
+                        <div style='color: #7f8c8d; margin-bottom: 10px;'>
+                            📍 {row['location']}
+                        </div>
+                        <div style='font-size: 15px;'> <b>Sursă:</b> {row['energy_source'].capitalize()}</div>
+                        <div style='font-size: 15px;'> <b>Producție:</b> {row['max_production_mwh']} MWh</div>
+                        <div style='font-size: 15px;'> <b>Consum:</b> {row['max_consumption_mwh']} MWh</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
             client_names = [client["name"] for client in clients]
             selected_client_name = st.selectbox("🔍 Alege un client", client_names)
@@ -29,10 +66,10 @@ def show(API_CLIENTS, primary):
                 # Selectare interval de timp
                 col1, col2 = st.columns(2)
                 with col1:
-                    start_date = st.date_input("📅 Data de început", pd.to_datetime("2024-01-01"))
+                    start_date = st.date_input("📅 Data de început", pd.to_datetime("2025-01-01"))
 
                 with col2:
-                    end_date = st.date_input("📅 Data de sfârșit", pd.to_datetime("2024-12-31"))
+                    end_date = st.date_input("📅 Data de sfârșit", pd.to_datetime("2025-01-03"))
 
                 if start_date > end_date:
                     st.warning("⚠️ Data de început nu poate fi după data de sfârșit.")

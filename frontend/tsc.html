@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_70200ebbc1072e52e7e253cd379b868f {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.css"/>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_70200ebbc1072e52e7e253cd379b868f" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_70200ebbc1072e52e7e253cd379b868f = L.map(
+                "map_70200ebbc1072e52e7e253cd379b868f",
+                {
+                    center: [45.9432, 24.9668],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+  "drawExport": false,
+  "layersControl": true,
+}
+
+                }
+            );
+            L.control.scale().addTo(map_70200ebbc1072e52e7e253cd379b868f);
+
+            
+
+        
+    
+            var tile_layer_a7cb0e4f890939e0ec50a2eb536a450e = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 24,
+  "maxNativeZoom": 24,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_a7cb0e4f890939e0ec50a2eb536a450e.addTo(map_70200ebbc1072e52e7e253cd379b868f);
+        
+    
+            L.control.fullscreen(
+                {
+  "position": "topleft",
+  "title": "Full Screen",
+  "titleCancel": "Exit Full Screen",
+  "forceSeparateButton": false,
+}
+            ).addTo(map_70200ebbc1072e52e7e253cd379b868f);
+        
+    
+
+            var geocoderOpts_geocoder_e2759ca1a33e8f73f9ac644723ab02ce = {
+  "collapsed": true,
+  "position": "topleft",
+  "defaultMarkGeocode": true,
+  "zoom": 11,
+  "provider": "nominatim",
+  "providerOptions": {
+},
+};
+
+            // note: geocoder name should start with lowercase
+            var geocoderName_geocoder_e2759ca1a33e8f73f9ac644723ab02ce = geocoderOpts_geocoder_e2759ca1a33e8f73f9ac644723ab02ce["provider"];
+
+            var customGeocoder_geocoder_e2759ca1a33e8f73f9ac644723ab02ce = L.Control.Geocoder[ geocoderName_geocoder_e2759ca1a33e8f73f9ac644723ab02ce ](
+                geocoderOpts_geocoder_e2759ca1a33e8f73f9ac644723ab02ce['providerOptions']
+            );
+            geocoderOpts_geocoder_e2759ca1a33e8f73f9ac644723ab02ce["geocoder"] = customGeocoder_geocoder_e2759ca1a33e8f73f9ac644723ab02ce;
+
+            L.Control.geocoder(
+                geocoderOpts_geocoder_e2759ca1a33e8f73f9ac644723ab02ce
+            ).on('markgeocode', function(e) {
+                var zoom = geocoderOpts_geocoder_e2759ca1a33e8f73f9ac644723ab02ce['zoom'] || map_70200ebbc1072e52e7e253cd379b868f.getZoom();
+                map_70200ebbc1072e52e7e253cd379b868f.setView(e.geocode.center, zoom);
+            }).addTo(map_70200ebbc1072e52e7e253cd379b868f);
+
+        
+    
+            map_70200ebbc1072e52e7e253cd379b868f.fitBounds(
+                [[45.9432, 24.9668], [45.9432, 24.9668]],
+                {"maxZoom": 7}
+            );
+        
+    
+            var tile_layer_e271f840371ef377eb804ebe749ede54 = L.tileLayer(
+                "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "(C) OpenStreetMap contributors (C) CARTO",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_e271f840371ef377eb804ebe749ede54.addTo(map_70200ebbc1072e52e7e253cd379b868f);
+        
+    
+            var marker_cluster_68107911a919483e72b9c12926a60e27 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var marker_016a2f56edce987717502addf3358335 = L.marker(
+                [45.72424, 23.107466],
+                {
+}
+            ).addTo(marker_cluster_68107911a919483e72b9c12926a60e27);
+        
+    
+        var custom_icon_8a265faca10d572d3f8993973d18ec4f = L.icon({
+  "iconUrl": "https://cdn-icons-png.flaticon.com/512/2972/2972185.png",
+  "iconSize": [30, 30],
+});
+        marker_016a2f56edce987717502addf3358335.setIcon(custom_icon_8a265faca10d572d3f8993973d18ec4f);
+        
+    
+        var popup_5481aaf5192cc4bab7298ecb0b749c7b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d9fa66982cbdbb2a2b51ce400ab34d49 = $(`<div id="html_d9fa66982cbdbb2a2b51ce400ab34d49" style="width: 100.0%; height: 100.0%;">             <div style='font-family: Arial; font-size: 14px;'>                 <b style='font-size: 16px; color: #2c3e50;'>Client2</b><br>                 <i style='color:gray;'>📍 Hunedoara</i><br>                 ⚡ <b>Sursă:</b> wind<br>                 🔋 <b>Producție:</b> 1.5 MWh<br>                 💡 <b>Consum:</b> 1.0 MWh             </div>             </div>`)[0];
+                popup_5481aaf5192cc4bab7298ecb0b749c7b.setContent(html_d9fa66982cbdbb2a2b51ce400ab34d49);
+            
+        
+
+        marker_016a2f56edce987717502addf3358335.bindPopup(popup_5481aaf5192cc4bab7298ecb0b749c7b)
+        ;
+
+        
+    
+    
+                marker_016a2f56edce987717502addf3358335.setIcon(custom_icon_8a265faca10d572d3f8993973d18ec4f);
+            
+    
+            var marker_41406bc862ac583b0b1789a277e1e19f = L.marker(
+                [46.831117, 26.255307],
+                {
+}
+            ).addTo(marker_cluster_68107911a919483e72b9c12926a60e27);
+        
+    
+        var custom_icon_87a53362e27cf400bdb82cc7fb7a4363 = L.icon({
+  "iconUrl": "https://cdn-icons-png.flaticon.com/512/2972/2972185.png",
+  "iconSize": [30, 30],
+});
+        marker_41406bc862ac583b0b1789a277e1e19f.setIcon(custom_icon_87a53362e27cf400bdb82cc7fb7a4363);
+        
+    
+        var popup_43851e63b112696db7ca2f471671272c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_6af45160da0d86814b52e85e5ac1d167 = $(`<div id="html_6af45160da0d86814b52e85e5ac1d167" style="width: 100.0%; height: 100.0%;">             <div style='font-family: Arial; font-size: 14px;'>                 <b style='font-size: 16px; color: #2c3e50;'>Client3</b><br>                 <i style='color:gray;'>📍 Neamt</i><br>                 ⚡ <b>Sursă:</b> wind<br>                 🔋 <b>Producție:</b> 0.5 MWh<br>                 💡 <b>Consum:</b> 0.8 MWh             </div>             </div>`)[0];
+                popup_43851e63b112696db7ca2f471671272c.setContent(html_6af45160da0d86814b52e85e5ac1d167);
+            
+        
+
+        marker_41406bc862ac583b0b1789a277e1e19f.bindPopup(popup_43851e63b112696db7ca2f471671272c)
+        ;
+
+        
+    
+    
+                marker_41406bc862ac583b0b1789a277e1e19f.setIcon(custom_icon_87a53362e27cf400bdb82cc7fb7a4363);
+            
+    
+            marker_cluster_68107911a919483e72b9c12926a60e27.addTo(map_70200ebbc1072e52e7e253cd379b868f);
+        
+    
+            var layer_control_b0ff91a3f10fcfd9b561b878d6dd3d5f_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_a7cb0e4f890939e0ec50a2eb536a450e,
+                },
+                overlays :  {
+                    "CartoDB.Positron" : tile_layer_e271f840371ef377eb804ebe749ede54,
+                    "macro_element_68107911a919483e72b9c12926a60e27" : marker_cluster_68107911a919483e72b9c12926a60e27,
+                },
+            };
+            let layer_control_b0ff91a3f10fcfd9b561b878d6dd3d5f = L.control.layers(
+                layer_control_b0ff91a3f10fcfd9b561b878d6dd3d5f_layers.base_layers,
+                layer_control_b0ff91a3f10fcfd9b561b878d6dd3d5f_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_70200ebbc1072e52e7e253cd379b868f);
+
+        
+</script>
+</html>

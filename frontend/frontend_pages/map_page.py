@@ -3,6 +3,9 @@ import pandas as pd
 import requests
 import folium
 from streamlit_folium import st_folium
+from folium.plugins import MarkerCluster
+from folium.features import DivIcon
+from folium import CustomIcon
 
 def show(API_CLIENTS_COORDINATES):
     st.title("🗺️ Clienți pe hartă")
@@ -14,30 +17,55 @@ def show(API_CLIENTS_COORDINATES):
 
             # 2. Convertim în DataFrame
             df = pd.DataFrame(data)
-            st.write(df.head())
+            
+            # 3. Inițializăm harta in centru
+            map_center = [45.9432, 24.9668]
+            m = folium.Map(location=map_center, zoom_start=7)
 
-            # 3. Inițializăm harta pe poziția medie
-            map_center = [df['lat'].mean(), df['long'].mean()]
-            m = folium.Map(location=map_center, zoom_start=6)
+            # 4. MarkerCluster -grupez locatii in cazul in care ele sunt apropiate
+            marker_cluster = MarkerCluster().add_to(m)
 
-            # 4. Adăugăm markere pentru fiecare client
+            # 4. Adaugă markerii în cluster cu iconițe personalizate
             for _, row in df.iterrows():
+                energy_source = row.get("energy_source")
+
+                if energy_source == "solar":
+                    icon_url = "https://cdn-icons-png.flaticon.com/512/169/169367.png"
+
+                else:
+                    icon_url = "https://cdn-icons-png.flaticon.com/512/8584/8584170.png"
+
+               # 5. Adăugăm markere pentru fiecare client
                 popup_html = f"""
-                <b>{row['name']}</b><br>
-                {row['location']}<br>
-                <i>Source:</i> {row['energy_source']}<br>
-                <i>Production:</i> {row['max_production_mwh']} MWh<br>
-                <i>Consumption:</i> {row['max_consumption_mwh']} MWh
+                <div style="font-family: Arial; font-size: 14px;">
+                    <div style="font-weight: bold; font-size: 16px; color: #2c3e50;">{row['name']}</div>
+                    <div style="margin-bottom: 4px; color: #7f8c8d;">📍 {row.get('location', 'necunoscut')}</div>
+                    <div><b> Sursă:</b> {row.get('energy_source', '-')}</div>
+                    <div><b> Producție:</b> {row.get('max_production_mwh', 0)} MWh</div>
+                    <div><b> Consum:</b> {row.get('max_consumption_mwh', 0)} MWh</div>
+                </div>
                 """
                 folium.Marker(
                     location=[row['lat'], row['long']],
                     popup=folium.Popup(popup_html, max_width=250),
-                    icon=folium.Icon(color="green" if row['has_production'] else "red", icon="bolt")
-                ).add_to(m)
+                    tooltip=f"{row['name']} ({row.get('energy_source', '-').capitalize()})",
+                    icon=CustomIcon(icon_url, icon_size=(40, 40))  # facem icon mai mare
+                ).add_to(marker_cluster)
 
-            # 5. Afișăm harta
-            st.title("🗺️ Clienți pe hartă")
-            st_folium(m, width=900, height=600)
+            # 6. Afișăm harta
+            with st.container():
+                st.markdown("""
+                    <style>
+                        div[data-testid="stVerticalBlock"] > div:has(.folium-map) {
+                            border-radius: 16px;
+                            overflow: hidden;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                            border: 1px solid #e6e6e6;
+                            margin-bottom: 20px;
+                        }
+                    </style>
+                """, unsafe_allow_html=True)
+            st_folium(m, width=900, height=400)
 
         else:
             st.error("❌ Nu s-au putut încărca coordonatele clientilor.")
