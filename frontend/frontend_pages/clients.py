@@ -29,18 +29,33 @@ def show(API_CLIENTS, primary):
 
             cols = st.columns(2)
 
+            # CSS injectat o singură dată (ideal: la începutul paginii)
+            st.markdown("""
+                <style>
+                .card {
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+
+                .card:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+                    cursor: pointer;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
             for i, (_, row) in enumerate(df.iterrows()):
                 with cols[i % 2]:
                     st.markdown(f"""
-                    <div style='
-                        background: linear-gradient(135deg, #9cd9b2, #ffffff);
-                        border: 1px solid #e6e6e6;
-                        border-radius: 12px;
-                        padding: 20px;
-                        margin: 10px 5px;
-                        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-                        font-family: "Segoe UI", sans-serif;
-                    '>
+                    <div class='card' style='
+                    background: linear-gradient(135deg, #9cd9b2, #ffffff);
+                    border: 1px solid #e6e6e6;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 10px 5px;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+                    font-family: "Segoe UI", sans-serif;
+                '>
                         <div style='font-size: 20px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;'>
                             {row['name']}
                         </div>
@@ -96,12 +111,14 @@ def show(API_CLIENTS, primary):
                             st.info(" Nu există date în intervalul selectat.")
                         else:
                             chart_data = filtered_data.rename(columns={
-                                "consumption_real": "Consum",
-                                "production_real": "Productie"
+                                "consumption_real": "Consum realizat",
+                                "production_real": "Productie realizata",
+                                "consumption_forecast" : "Consum prognozat",
+                                "production_forecast" : "Productie prognozata"
                             })
 
                             chart = alt.Chart(chart_data).transform_fold(
-                                ['Consum', 'Productie'],
+                                ['Consum realizat', 'Productie realizata', 'Consum prognozat', 'Productie prognozata'],
                                 as_=['Tip', 'Valoare']
                             ).mark_line(point=True).encode(
                                 x=alt.X('timestamp:T', title="Timp"),

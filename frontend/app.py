@@ -71,8 +71,9 @@ st.markdown("""
 # afisare lista clienti
 API_CLIENTS = "http://127.0.0.1:8000/api/clients/"
 
-# # get coordonate clienti
-# API_CLIENTS_COORDINATES="http://127.0.0.1:8000/api/clients/coordinates/"
+API_TODAY_CONSUMPTION = "http://127.0.0.1:8000/api/readings/today-consumption/"
+
+API_TODAY_PRODUCTION = "http://127.0.0.1:8000/api/readings/today-production/"
 
 # === Tema / Mod vizual ===
 with st.sidebar:
@@ -94,26 +95,54 @@ text = "#212121" if not mode else "#ffffff"
 card_bg = "#ffffff" if not mode else "#2b2b2b"
 
 # === HEADER ===
+
 st.markdown(f"""
     <style>
         .main {{
             background-color: {bg};
         }}
+
+        .pulsing-emoji {{
+            display: inline-block;
+            animation: pulse 1.5s ease-in-out infinite;
+        }}
+
+        @keyframes pulse {{
+            0%   {{ transform: scale(1); }}
+            50%  {{ transform: scale(1.4); }}
+            100% {{ transform: scale(1); }}
+        }}
     </style>
+
     <div style='text-align:center; padding:20px; background:linear-gradient(to right, {primary}, #81c784); border-radius:10px;'>
-        <h1 style='color:white;'>⚡ Virtual Power Plant Dashboard</h1>
+        <h1 style='color:white;'>
+            <span class='pulsing-emoji'>⚡</span> Virtual Power Plant Dashboard
+        </h1>
         <p style='color:white;'>Monitorizează producția, consumul și performanța energetică</p>
     </div>
 """, unsafe_allow_html=True)
+
+
+# st.markdown(f"""
+#     <style>
+#         .main {{
+#             background-color: {bg};
+#         }}
+#     </style>
+#     <div style='text-align:center; padding:20px; background:linear-gradient(to right, {primary}, #81c784); border-radius:10px;'>
+#         <h1 style='color:white;'>⚡ Virtual Power Plant Dashboard</h1>
+#         <p style='color:white;'>Monitorizează producția, consumul și performanța energetică</p>
+#     </div>
+# """, unsafe_allow_html=True)
 
 # === PAGINI ===
 
 if selected == "Acasă":
     home.show(primary, text, card_bg)
 elif selected == "Producție":
-    production.show()
+    production.show(API_TODAY_PRODUCTION)
 elif selected == "Consum":
-    consumption.show()
+    consumption.show(API_TODAY_CONSUMPTION)
 elif selected == "Clienți":
     clients.show(API_CLIENTS, primary)
 elif selected == "Statistici":

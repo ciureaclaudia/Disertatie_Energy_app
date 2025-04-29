@@ -9,6 +9,39 @@ from folium import CustomIcon
 
 def show(API_CLIENTS_COORDINATES):
     st.title("🗺️ Clienți pe hartă")
+
+    st.markdown(
+    """
+    <style>
+    .rotating {
+        animation: rotation 1s linear infinite;
+        width: 60px;
+        margin: 0 20px;
+    }
+
+    @keyframes rotation {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .row {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    </style>
+
+    <div class="row">
+        <img src="https://cdn-icons-png.flaticon.com/512/169/169367.png" class="rotating">
+        <img src="https://cdn-icons-png.flaticon.com/512/169/169367.png" class="rotating">
+        <img src="https://cdn-icons-png.flaticon.com/512/169/169367.png" class="rotating">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
     try:
         # 1. Ia datele de la API
         response = requests.get(API_CLIENTS_COORDINATES)
@@ -57,15 +90,15 @@ def show(API_CLIENTS_COORDINATES):
                 st.markdown("""
                     <style>
                         div[data-testid="stVerticalBlock"] > div:has(.folium-map) {
-                            border-radius: 16px;
+                            border-radius: 20px;
                             overflow: hidden;
-                            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                            box-shadow: 0 4px 8px rgba(0,0,0,1);
                             border: 1px solid #e6e6e6;
                             margin-bottom: 20px;
                         }
                     </style>
                 """, unsafe_allow_html=True)
-            st_folium(m, width=900, height=400)
+            st_folium(m, width=1000, height=500)
 
         else:
             st.error("❌ Nu s-au putut încărca coordonatele clientilor.")

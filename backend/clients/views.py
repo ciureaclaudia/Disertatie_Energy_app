@@ -32,6 +32,39 @@ class EnergyReadingViewSet(viewsets.ModelViewSet):
         if client_id is not None:
             return self.queryset.filter(client__id=client_id)
         return self.queryset.none()  # or raise error if you want to restrict access
+    
+    @action(detail=False, methods=['get'], url_path='today-consumption')
+    def today_consumption(self, request):
+        today = datetime.now().date()
+        readings = EnergyReading.objects.filter(timestamp__date=today)
+
+
+        result = [
+            {
+                "timestamp": reading.timestamp.isoformat(),
+                "consumption_real": reading.consumption_real,
+                "energy_source": reading.client.energy_source,
+            }
+            for reading in readings
+        ]
+
+        return Response(result)
+    
+    @action(detail=False, methods=['get'], url_path='today-production')
+    def today_production(self, request):
+        today = datetime.now().date()
+        readings = EnergyReading.objects.filter(timestamp__date=today)
+
+        result = [
+            {
+                "timestamp": reading.timestamp.isoformat(),
+                "production_real": reading.production_real,
+                "energy_source": reading.client.energy_source,
+            }
+            for reading in readings
+        ]
+
+        return Response(result)
 
 class GenerateSyntheticDataView(APIView):
     def post(self, request, pk):
@@ -103,3 +136,22 @@ class DeleteClientReadingsView(APIView):
         return Response({
             "message": f"Deleted {count} readings for client '{client.name}'."
         }, status=status.HTTP_200_OK)
+
+
+# class TodayConsumptionView(APIView):
+#     def get(self, request):
+#         today = datetime.now().date()
+#         readings = EnergyReading.objects.filter(timestamp__date=today)
+
+#         consumption_by_client = {}
+
+#         for reading in readings:
+#             client_name = reading.client.name
+#             consumption_by_client[client_name] = consumption_by_client.get(client_name, 0) + reading.consumption_real
+
+#         result = [
+#             {"client": name, "consumption_real": round(value, 2)}
+#             for name, value in consumption_by_client.items()
+#         ]
+
+#         return Response(result, status=status.HTTP_200_OK)
