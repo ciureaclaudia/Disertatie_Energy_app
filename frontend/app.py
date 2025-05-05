@@ -12,6 +12,35 @@ st.set_page_config(
 
 st.markdown("""
     <style>
+    /* Scoate complet marginile și padding-ul din containerul general al sidebar-ului */
+    .css-1d391kg, .css-1lcbmhc, section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div:first-child {
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: #f5f5f5 !important;
+        height: 100vh !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    /* Elimina spațiu din option menu container */
+    .css-1n76uvr, .css-13hxz1l, .css-1cypcdb {
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: none !important;
+    }
+
+    /* Asigură că tot spațiul e eliminat inclusiv wrapperul aplicatiei */
+    .css-hxt7ib {
+        padding: 0 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
+st.markdown("""
+    <style>
     /* Ascunde bara Streamlit de sus și jos */
     #MainMenu, header, footer {
         visibility: hidden;
@@ -62,9 +91,25 @@ st.markdown("""
         background-color: #ff4b4b !important;
         color: white !important;
     }
+
+    .stApp {
+        background-color: #f2f9f4;  /* soft background pentru întreaga aplicație */
+    }
+
+    .block-container {
+        background: linear-gradient(to bottom right, #e0f7e9, #fdfdfd);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-top: 2rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    header, .css-1avcm0n, .css-18ni7ap, .css-1y4p8pa {  /* titlu, navbar, sidebar */
+        background: none !important;
+    }    
+
     </style>
 """, unsafe_allow_html=True)
-
 
 
 
@@ -112,6 +157,8 @@ st.markdown(f"""
             50%  {{ transform: scale(1.4); }}
             100% {{ transform: scale(1); }}
         }}
+
+        
     </style>
 
     <div style='text-align:center; padding:20px; background:linear-gradient(to right, {primary}, #81c784); border-radius:10px;'>
@@ -122,6 +169,13 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
+    body {
+        background: linear-gradient(to bottom, #d7f0dd, #f0fdf4);
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # st.markdown(f"""
 #     <style>

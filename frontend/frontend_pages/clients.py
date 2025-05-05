@@ -8,10 +8,37 @@ from fpdf import FPDF
 import io
 from frontend_pages.addclients import show_add_client_form
 
+
 def show(API_CLIENTS, primary):
+    # Încarcă forecastul de mâine, 24 intervale/oră pentru toți clienții
+    try:
+        forecast_data = []  
+        forecast_date = "Indisponibil"
+        forecast_map = {}
+
+
+        forecast_url = "http://127.0.0.1:8000/api/readings/forecast-diff-tomorrow-hourly/"
+        forecast_response = requests.get(forecast_url)
+    
+
+        if forecast_response.status_code == 200:
+            forecast_data = forecast_response.json()
+            forecast_date = forecast_data[0]["date"] if forecast_data else "Necunoscut"
+            forecast_map = {
+                item["client_id"]: item["hourly"] for item in forecast_data
+            }
+        
+        else:
+            forecast_map = {}
+        
+    except Exception as e:
+        st.error(f"❌ Eroare la încărcarea forecasturilor: {e}")
+        forecast_map = {}
+
+
     st.subheader("📋 Lista Clienților")
 
-    # ➕ ADD CLIENT FORM
+    # ADD CLIENT FORM
     show_add_client_form(API_CLIENTS)
 
     # Dacă tocmai s-a adăugat un client nou, reîncarcăm lista
@@ -68,6 +95,43 @@ def show(API_CLIENTS, primary):
                     </div>
                     """, unsafe_allow_html=True)
 
+                    #  Buton forecast per client
+                    with st.expander(f"**{'Interactiune cu grid'}** {row['name']}  ---   **{forecast_date}** "):
+                        client_id = int(row["id"])
+                        hourly_forecast = forecast_map.get(client_id)
+
+                        if hourly_forecast:
+                            forecast_df = pd.DataFrame(hourly_forecast)
+                            forecast_df["hour"] = forecast_df["hour"]  # păstrează ca string
+                            forecast_df = forecast_df.sort_values(by="hour")
+                            forecast_df["acțiune"] = forecast_df["difference"].apply(
+                                lambda x: "Cumpar" if x > 0 else "Vand" if x < 0 else "Echilibru"
+                            )
+
+                            st.dataframe(forecast_df[["hour", "difference", "acțiune"]], use_container_width=True)
+
+                            import altair as alt
+
+                            line_chart = alt.Chart(forecast_df).mark_line(point=True).encode(
+                                x=alt.X("hour:O", title="Oră"),
+                                y=alt.Y("difference:Q", title="Diferență (MWh)"),
+                                tooltip=["hour", "difference"]
+                            )
+
+                            zero_line = alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(
+                                color='purple', strokeWidth=2, strokeDash=[4, 4]  # linie neagră, întreruptă
+                            ).encode(y='y')
+
+                            chart = (line_chart + zero_line).properties(
+                                title="Interactiune cu grid (consum-productie)",
+                                width=500,
+                                height=300
+                            )
+
+                            st.altair_chart(chart, use_container_width=True)
+
+
+                        
             client_names = [client["name"] for client in clients]
             selected_client_name = st.selectbox("🔍 Alege un client", client_names)
 

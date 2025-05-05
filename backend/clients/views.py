@@ -7,6 +7,7 @@ from .models import Client,EnergyReading
 from .serializers import ClientSerializer,EnergyReadingSerializer
 from .utils import generate_synthetic_readings_for_client
 from rest_framework.decorators import action
+from django.utils.timezone import make_aware, timedelta
 
 import pytz
 
@@ -65,6 +66,42 @@ class EnergyReadingViewSet(viewsets.ModelViewSet):
         ]
 
         return Response(result)
+
+
+# interactiune cu gridul, macheta pt maine pt fiecare client
+    @action(detail=False, methods=['get'], url_path='forecast-diff-tomorrow-hourly')
+    def forecast_diff_tomorrow_hourly(self, request):
+        tomorrow = datetime.now().date() + timedelta(days=1)
+        readings = EnergyReading.objects.filter(timestamp__date=tomorrow)
+
+        hourly_data_by_client = {}
+
+        for reading in readings:
+            client = reading.client
+            hour = reading.timestamp.strftime("%H:%M")
+
+            if client.id not in hourly_data_by_client:
+                hourly_data_by_client[client.id] = {
+                    "client": client.name,
+                    "client_id": client.id,
+                    "date": tomorrow.strftime("%Y-%m-%d"),
+                    "hourly": []
+                }
+
+            prod = reading.production_forecast or 0
+            cons = reading.consumption_forecast or 0
+            diff = round(cons - prod, 2)
+
+            hourly_data_by_client[client.id]["hourly"].append({
+                "hour": hour,
+                "difference": diff
+            })
+
+        return Response(list(hourly_data_by_client.values()))
+
+
+    
+   
 
 class GenerateSyntheticDataView(APIView):
     def post(self, request, pk):
