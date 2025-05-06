@@ -10,7 +10,7 @@ def show_add_client_form(API_CLIENTS):
         location = st.text_input("Locație")
         lat = st.number_input("Latitudine", format="%.6f")
         long = st.number_input("Longitudine", format="%.6f")
-        energy_source = st.selectbox("Sursa Energie", ["solar", "wind", "hydro", "other"])
+        energy_source = st.selectbox("Sursa Energie", ["solar", "wind"])
         max_consumption = st.number_input("Consum maxim (MWh)", format="%.2f")
         max_production = st.number_input("Producție maximă (MWh)", format="%.2f")
         has_consumption = st.checkbox("Are consum?", value=True)

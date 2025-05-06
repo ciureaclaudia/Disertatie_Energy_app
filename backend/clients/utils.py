@@ -3,6 +3,8 @@ import random
 from datetime import timedelta
 from collections import defaultdict
 from .models import Client, EnergyReading
+import pandas as pd
+from typing import List, Tuple
 
 def generate_synthetic_readings_for_client(client, start_date, end_date):
     total_hours = int((end_date - start_date).total_seconds() // 3600)
@@ -80,3 +82,33 @@ def generate_forecast_from_real(real_value, daily_bias=None, hourly_noise_percen
     forecast_value = real_value * (1 + daily_bias + hourly_noise)
     return max(0, round(forecast_value, 3))
 
+def redistribute_energy(df: pd.DataFrame) -> Tuple[List[dict], pd.DataFrame, pd.DataFrame]:
+    # Separă clienții în excedentari și deficitori
+    excedent = df[df["Status"] == "Excedent"].copy()
+    deficit = df[df["Status"] == "Deficit"].copy()
+
+    # Sortăm
+    excedent = excedent.sort_values(by="Cantitate Energie", ascending=False).reset_index(drop=True)
+    deficit = deficit.sort_values(by="Cantitate Energie").reset_index(drop=True)
+
+    transfers = []
+    for i, def_row in deficit.iterrows():
+        needed = abs(def_row["Cantitate Energie"])
+        for j, exc_row in excedent.iterrows():
+            available = exc_row["Cantitate Energie"]
+            if available <= 0:
+                continue
+            transfer = min(needed, available)
+            if transfer > 0:
+                transfers.append({
+                    "from": exc_row["Client"],
+                    "to": def_row["Client"],
+                    "energie_transferata": transfer
+                })
+                excedent.at[j, "Cantitate Energie"] -= transfer
+                deficit.at[i, "Cantitate Energie"] += transfer
+                needed -= transfer
+                if needed <= 0:
+                    break
+
+    return transfers, excedent, deficit

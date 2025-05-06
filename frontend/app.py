@@ -12,35 +12,6 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* Scoate complet marginile și padding-ul din containerul general al sidebar-ului */
-    .css-1d391kg, .css-1lcbmhc, section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div:first-child {
-        padding: 0 !important;
-        margin: 0 !important;
-        background-color: #f5f5f5 !important;
-        height: 100vh !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-    }
-
-    /* Elimina spațiu din option menu container */
-    .css-1n76uvr, .css-13hxz1l, .css-1cypcdb {
-        padding: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        border: none !important;
-        background: none !important;
-    }
-
-    /* Asigură că tot spațiul e eliminat inclusiv wrapperul aplicatiei */
-    .css-hxt7ib {
-        padding: 0 !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-
-st.markdown("""
-    <style>
     /* Ascunde bara Streamlit de sus și jos */
     #MainMenu, header, footer {
         visibility: hidden;
@@ -65,15 +36,7 @@ st.markdown("""
         box-shadow: none !important;
     }
 
-    /* Elimină padding-ul implicit din option_menu */
-    .css-1n76uvr, .css-13hxz1l {
-        padding: 0 !important;
-        margin: 0 !important;
-        background-color: transparent !important;
-        box-shadow: none !important;
-        border: none !important;
-    }
-
+   
     /* Option_menu styling */
     .nav-link {
         font-size: 16px;
@@ -104,14 +67,18 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
     }
 
-    header, .css-1avcm0n, .css-18ni7ap, .css-1y4p8pa {  /* titlu, navbar, sidebar */
-        background: none !important;
-    }    
-
     </style>
 """, unsafe_allow_html=True)
 
-
+st.markdown("""
+    <style>
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # afisare lista clienti
 API_CLIENTS = "http://127.0.0.1:8000/api/clients/"
@@ -119,6 +86,9 @@ API_CLIENTS = "http://127.0.0.1:8000/api/clients/"
 API_TODAY_CONSUMPTION = "http://127.0.0.1:8000/api/readings/today-consumption/"
 
 API_TODAY_PRODUCTION = "http://127.0.0.1:8000/api/readings/today-production/"
+
+API_LAST_HOUR="http://127.0.0.1:8000/api/readings/last-hour-data/"
+
 
 # === Tema / Mod vizual ===
 with st.sidebar:
@@ -156,9 +126,7 @@ st.markdown(f"""
             0%   {{ transform: scale(1); }}
             50%  {{ transform: scale(1.4); }}
             100% {{ transform: scale(1); }}
-        }}
-
-        
+        }}    
     </style>
 
     <div style='text-align:center; padding:20px; background:linear-gradient(to right, {primary}, #81c784); border-radius:10px;'>
@@ -192,7 +160,7 @@ st.markdown("""
 # === PAGINI ===
 
 if selected == "Acasă":
-    home.show(primary, text, card_bg)
+    home.show(API_LAST_HOUR , primary, text, card_bg)
 elif selected == "Producție":
     production.show(API_TODAY_PRODUCTION)
 elif selected == "Consum":

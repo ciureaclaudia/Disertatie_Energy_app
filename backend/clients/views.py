@@ -5,10 +5,10 @@ from rest_framework.views import APIView
 from datetime import datetime
 from .models import Client,EnergyReading
 from .serializers import ClientSerializer,EnergyReadingSerializer
-from .utils import generate_synthetic_readings_for_client
+from .utils import generate_synthetic_readings_for_client, redistribute_energy
 from rest_framework.decorators import action
 from django.utils.timezone import make_aware, timedelta
-
+import pandas as pd
 import pytz
 
 
@@ -66,8 +66,7 @@ class EnergyReadingViewSet(viewsets.ModelViewSet):
         ]
 
         return Response(result)
-
-
+    
 # interactiune cu gridul, macheta pt maine pt fiecare client
     @action(detail=False, methods=['get'], url_path='forecast-diff-tomorrow-hourly')
     def forecast_diff_tomorrow_hourly(self, request):
@@ -99,9 +98,57 @@ class EnergyReadingViewSet(viewsets.ModelViewSet):
 
         return Response(list(hourly_data_by_client.values()))
 
+#  preiau datele de consum si prod real si forecast de cu o ora inainte
+    @action(detail=False, methods=['get'], url_path='last-hour-data')
+    def last_hour_data(self, request):
+        tz = pytz.timezone("Europe/Bucharest")
+        now = datetime.now(tz)
+        previous_hour = now.replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
+        next_hour = previous_hour + timedelta(hours=1)
+
+        readings = EnergyReading.objects.filter(timestamp__gte=previous_hour, timestamp__lt=next_hour)
+
+        # result este o listă de dicționare , unde fiecare dicționar conține informațiile 
+        # extrase dintr-un obiect EnergyReading  -> list comprehensions
+        result = [
+            {
+                "timestamp": reading.timestamp.isoformat(),
+                "client_id": reading.client.id,
+                "client": reading.client.name,
+                "consumption_real": reading.consumption_real,
+                "production_real": reading.production_real,
+                "consumption_forecast":reading.consumption_forecast,
+                "production_forecast":reading.production_forecast
+            }
+            for reading in readings
+        ]
+
+        return Response(result)
+
+    @action(detail=False, methods=['post'], url_path='redistribute-energy')
+    def redistribute_energy_api(self, request):
+        try:
+            data = request.data
+            if not isinstance(data, list):
+                return Response({"error": "Expected a list of client data"}, status=status.HTTP_400_BAD_REQUEST)
+
+            df = pd.DataFrame(data)
+
+            if "Client" not in df.columns or "Cantitate Energie" not in df.columns or "Status" not in df.columns:
+                return Response({"error": "Missing required columns: 'Client', 'Cantitate Energie', 'Status'"}, status=status.HTTP_400_BAD_REQUEST)
+
+            transfers, excedent_final, deficit_final = redistribute_energy(df)
+
+            return Response({
+                "transfers": transfers,
+                "excedent": excedent_final.to_dict(orient="records"),
+                "deficit": deficit_final.to_dict(orient="records"),
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
-   
 
 class GenerateSyntheticDataView(APIView):
     def post(self, request, pk):
