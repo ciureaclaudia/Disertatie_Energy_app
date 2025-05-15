@@ -88,9 +88,9 @@ def redistribute_energy(df: pd.DataFrame) -> Tuple[List[dict], pd.DataFrame, pd.
     deficit = df[df["Status"] == "Deficit"].copy()
 
     # Sortăm
-    excedent = excedent.sort_values(by="Cantitate Energie", ascending=False).reset_index(drop=True)
-    deficit = deficit.sort_values(by="Cantitate Energie").reset_index(drop=True)
-
+    excedent = excedent.sort_values(by="Cantitate Energie", ascending=False).reset_index(drop=True)  # descrescator
+    deficit = deficit.sort_values(by="Cantitate Energie").reset_index(drop=True)  # crescator
+   
     transfers = []
     for i, def_row in deficit.iterrows():
         needed = abs(def_row["Cantitate Energie"])

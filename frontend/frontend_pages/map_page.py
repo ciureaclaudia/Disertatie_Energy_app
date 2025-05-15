@@ -98,7 +98,7 @@ def show(API_CLIENTS_COORDINATES):
                         }
                     </style>
                 """, unsafe_allow_html=True)
-            st_folium(m, width=1000, height=500)
+            st_folium(m, width=1500, height=600)
 
         else:
             st.error("❌ Nu s-au putut încărca coordonatele clientilor.")

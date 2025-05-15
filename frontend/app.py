@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-from frontend_pages import home, production, consumption, clients, statistics, map_page
+from frontend_pages import home, production, clients, statistics, map_page
 
 # === Configura pagina ===
 st.set_page_config(
@@ -95,7 +95,7 @@ with st.sidebar:
 
     selected = option_menu(
         menu_title="Meniu VPP",
-        options=["Acasă", "Producție", "Consum", "Clienți", "Statistici","Hartă"],
+        options=["Acasă", "Producție si Consum realizat", "Clienți", "Statistici","Hartă"],
         icons=["house", "battery-charging", "lightning", "people", "bar-chart-line"],
         default_index=0,
         orientation="vertical"
@@ -161,10 +161,8 @@ st.markdown("""
 
 if selected == "Acasă":
     home.show(API_LAST_HOUR , primary, text, card_bg)
-elif selected == "Producție":
-    production.show(API_TODAY_PRODUCTION)
-elif selected == "Consum":
-    consumption.show(API_TODAY_CONSUMPTION)
+elif selected == "Producție si Consum realizat":
+    production.show(API_TODAY_PRODUCTION,API_TODAY_CONSUMPTION)
 elif selected == "Clienți":
     clients.show(API_CLIENTS, primary)
 elif selected == "Statistici":
