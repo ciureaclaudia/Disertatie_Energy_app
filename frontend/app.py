@@ -89,6 +89,7 @@ API_TODAY_PRODUCTION = "http://127.0.0.1:8000/api/readings/today-production/"
 
 API_LAST_HOUR="http://127.0.0.1:8000/api/readings/last-hour-data/"
 
+API_LAST_HOUR_PRICES="http://127.0.0.1:8000/api/readings/last-hour-prices/"
 
 # === Tema / Mod vizual ===
 with st.sidebar:
@@ -160,7 +161,7 @@ st.markdown("""
 # === PAGINI ===
 
 if selected == "Acasă":
-    home.show(API_LAST_HOUR , primary, text, card_bg)
+    home.show(API_LAST_HOUR ,API_LAST_HOUR_PRICES, primary, text, card_bg)
 elif selected == "Producție si Consum realizat":
     production.show(API_TODAY_PRODUCTION,API_TODAY_CONSUMPTION)
 elif selected == "Clienți":

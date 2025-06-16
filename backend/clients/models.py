@@ -29,3 +29,11 @@ class EnergyReading(models.Model):
 
     def __str__(self):
         return f"{self.client.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+    
+class PretDezechilibru(models.Model):
+    timestamp = models.DateTimeField()
+    pret_excedent = models.FloatField()
+    pret_deficit = models.FloatField()
+
+    def __str__(self):
+        return f"{self.timestamp} - Excedent: {self.pret_excedent} / Deficit: {self.pret_deficit}"

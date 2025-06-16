@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ClientViewSet, EnergyReadingViewSet, GenerateSyntheticDataView, DeleteClientReadingsView
+from .views import ClientViewSet, EnergyReadingViewSet, GenerateSyntheticDataView, DeleteClientReadingsView, PretDezechilibruViewSet, GenerateSyntheticPriceDezechilibruView
 
 router = DefaultRouter()
 router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'readings', EnergyReadingViewSet, basename='reading')
+router.register(r'preturi-dezechilibru', PretDezechilibruViewSet, basename='preturi-dezechilibru')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -17,7 +18,12 @@ urlpatterns = [
     path('clients/<int:pk>/delete_readings/', DeleteClientReadingsView.as_view(), name='delete-readings'),
     # path('clients/today-consumption/', TodayConsumptionView.as_view(), name="today-consumption"),
 
+    path('generare_pret_dezechilibru/', GenerateSyntheticPriceDezechilibruView.as_view(), name='generare-pret-dezechilibru'),
+
+   
 ]
+
+
 
 
 

@@ -2,9 +2,12 @@ import math
 import random
 from datetime import timedelta
 from collections import defaultdict
-from .models import Client, EnergyReading
+from .models import Client, EnergyReading, PretDezechilibru
 import pandas as pd
+import numpy as np
+import pytz
 from typing import List, Tuple
+from django.db import transaction
 
 def generate_synthetic_readings_for_client(client, start_date, end_date):
     total_hours = int((end_date - start_date).total_seconds() // 3600)
@@ -31,7 +34,7 @@ def generate_synthetic_readings_for_client(client, start_date, end_date):
                         seasonal = 1 + 0.4 * math.cos(2 * math.pi * (day_of_year - 172) / 365)
                         production = client.max_production_mwh * daylight_factor * seasonal
 
-                        # ⚠️ Add noise only if there's production!
+                        # Add noise 
                         production += random.gauss(0, 0.02 * client.max_production_mwh)
                     else:
                         production = 0
@@ -112,3 +115,136 @@ def redistribute_energy(df: pd.DataFrame) -> Tuple[List[dict], pd.DataFrame, pd.
                     break
 
     return transfers, excedent, deficit
+
+
+# def redistribute_energy(df: pd.DataFrame) -> Tuple[List[dict], pd.DataFrame, pd.DataFrame]:
+#     """
+#     Primește un DataFrame care trebuie să aibă (cel puțin):
+#       - "Client"
+#       - "Cantitate Energie"
+#       - "Status"
+#     Redistribuie energia între clienți, iar acolo unde nu există sursă (excedent) 
+#     pentru a acoperi deficitul, ia din „Grid National”. 
+#     Dacă nu există deficitori, trimite excedentul în „Grid National”.
+#     """
+#     # 1) FILTRARE: clienții în excedent / clienții în deficit
+#     excedent = df[df["Status"] == "Excedent"].copy()
+#     deficit = df[df["Status"] == "Deficit"].copy()
+
+#     # 2) SORTĂRI (excedent: descrescător, deficit: crescător)
+#     excedent = excedent.sort_values(by="Cantitate Energie", ascending=False).reset_index(drop=True)
+#     deficit = deficit.sort_values(by="Cantitate Energie").reset_index(drop=True)
+
+#     transfers: List[dict] = []
+
+#     # 3) CAZ SPECIAL 1: nu există deloc EXCEDENT → iau tot deficitul din Grid National
+#     if excedent.empty and not deficit.empty:
+#         for i, def_row in deficit.iterrows():
+#             needed = abs(def_row["Cantitate Energie"])
+#             if needed > 0:
+#                 transfers.append({
+#                     "from": "Grid National",
+#                     "to":   def_row["Client"],
+#                     "energie_transferata": needed
+#                 })
+#                 deficit.at[i, "Cantitate Energie"] = 0.0
+#         return transfers, excedent, deficit
+
+#     # 4) CAZ SPECIAL 2: nu există deloc DEFICIT → trimit tot excedentul în Grid National
+#     if deficit.empty and not excedent.empty:
+#         for j, exc_row in excedent.iterrows():
+#             available = exc_row["Cantitate Energie"]
+#             if available > 0:
+#                 transfers.append({
+#                     "from": exc_row["Client"],
+#                     "to":   "Grid National",
+#                     "energie_transferata": available
+#                 })
+#                 excedent.at[j, "Cantitate Energie"] = 0.0
+#         return transfers, excedent, deficit
+
+#     # 5) CAZ GENERAL: există și excedentari, și deficitori → redistribuim între ei
+#     for i, def_row in deficit.iterrows():
+#         needed = abs(def_row["Cantitate Energie"])
+#         if needed <= 0:
+#             continue
+
+#         for j, exc_row in excedent.iterrows():
+#             available = exc_row["Cantitate Energie"]
+#             if available <= 0:
+#                 continue
+
+#             transfer = min(needed, available)
+#             if transfer > 0:
+#                 transfers.append({
+#                     "from": exc_row["Client"],
+#                     "to":   def_row["Client"],
+#                     "energie_transferata": transfer
+#                 })
+#                 excedent.at[j, "Cantitate Energie"] -= transfer
+#                 deficit.at[i, "Cantitate Energie"] += transfer
+#                 needed -= transfer
+#                 if needed <= 0:
+#                     break
+
+#         # dacă, după ce am luat de la toți excedentarii, tot mai rămâne deficit, ia din Grid
+#         if needed > 0:
+#             transfers.append({
+#                 "from": "Grid National",
+#                 "to":   def_row["Client"],
+#                 "energie_transferata": needed
+#             })
+#             deficit.at[i, "Cantitate Energie"] = 0.0
+
+#     return transfers, excedent, deficit
+
+
+def generate_price_dezechilibru(start_date, end_date, tz_name="Europe/Bucharest"):
+    """
+    - Builds a 1h-minute grid [start_date, end_date) 
+    - Computes pret_excedent / pret_deficit
+    - Bulk-inserts PretDezechilibru rows
+    - Returns number of rows created
+    """
+    # ensure we work in the right timezone
+    tz = pytz.timezone(tz_name)
+    if start_date.tzinfo is None:
+        start_date = tz.localize(start_date)
+    if end_date.tzinfo is None:
+        end_date = tz.localize(end_date)
+
+    # generate timestamps, left-inclusive
+    dr = pd.date_range(start=start_date, end=end_date, freq="H", inclusive="left")
+    df = pd.DataFrame({"timestamp": dr})
+    df["hour"] = df["timestamp"].dt.hour
+
+    def pret_mediu_ora(h):
+        if 7 <= h <= 10:   return 120
+        if 17 <= h <= 20:  return 130
+        if 0 <= h <= 5:    return  80
+        return 100
+
+    df["pret_mediu"] = df["hour"].apply(pret_mediu_ora)
+
+    np.random.seed(42)
+    ne = 1 + 0.05 * np.random.randn(len(df))
+    nd = 1 + 0.05 * np.random.randn(len(df))
+
+    df["pret_excedent"] = (df["pret_mediu"] * 0.9 * ne).round(2)
+    df["pret_deficit"]  = (df["pret_mediu"] * 1.1 * nd).round(2)
+
+    # build model instances
+    objs = [
+        PretDezechilibru(
+            timestamp       = row.timestamp.to_pydatetime(),
+            pret_excedent   = row.pret_excedent,
+            pret_deficit    = row.pret_deficit
+        )
+        for row in df.itertuples()
+    ]
+
+    # bulk insert in a transaction
+    with transaction.atomic():
+        PretDezechilibru.objects.bulk_create(objs, batch_size=500)
+
+    return len(objs)

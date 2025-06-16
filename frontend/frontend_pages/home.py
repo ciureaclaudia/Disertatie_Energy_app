@@ -13,7 +13,7 @@ def calculate_diferenta(row):
         return row["lt_real"] - row["lt_forecast"]
 
 
-def show(API_LAST_HOUR, primary, text, card_bg):
+def show(API_LAST_HOUR,API_LAST_HOUR_PRICES, primary, text, card_bg):
     col1, col2 = st.columns([2, 1])
     with col1:
         st.markdown(f"""
@@ -24,11 +24,44 @@ def show(API_LAST_HOUR, primary, text, card_bg):
                 </p>
             </div>
         """, unsafe_allow_html=True)
-    with col2:
-        st.image("https://cdn-icons-png.flaticon.com/512/4299/4299926.png", width=200)
+    # with col2:
+    #     # st.image("https://cdn-icons-png.flaticon.com/512/4299/4299926.png", width=200)
 
     st.markdown("---")
 
+    try:
+
+        response = requests.get(API_LAST_HOUR_PRICES)
+        if response.status_code == 200:
+            data_pret = response.json()
+            df_pret = pd.DataFrame(data_pret)
+             # extract scalars
+            pret_ex   = df_pret.loc[0, "pret_excedent"]
+            pret_def  = df_pret.loc[0, "pret_deficit"]
+            ts_raw    = df_pret.loc[0, "timestamp"]
+
+            # parse, convert to Europe/Bucharest, then format
+            ts_local = (
+                pd.to_datetime(ts_raw)              # yields a UTC tz-aware Timestamp
+                .tz_convert("Europe/Bucharest")   # convert to Romanian time, handling DST
+            )
+            ts_fmt = ts_local.strftime("%Y-%m-%d %H:%M:%S")
+
+            
+
+            # put three metrics in one row
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Preț Excedent (lei/MWh)", pret_ex)
+            col2.metric("Preț Deficit  (lei/MWh)", pret_def)
+            col3.metric("Ultima actualizare", ts_fmt) 
+             
+
+        else:
+            st.error(f"API Error: {response.status_code}")
+
+    except Exception as e:
+        st.error(f"Eroare: {e}")
+    
     try:
     
         response = requests.get(API_LAST_HOUR)
@@ -44,10 +77,9 @@ def show(API_LAST_HOUR, primary, text, card_bg):
             # df["diferenta"] = df["lt_real"] -df["lt_forecast"]
 
             df["diferenta"] = df.apply(calculate_diferenta, axis=1)
-
             df["status"] = df["diferenta"].apply(lambda x: "Excedent" if x >= 0 else "Deficit")
-
-            # df["diferenta"] = df["diferenta"].abs()
+            df["valoare"]= df["diferenta"].apply(lambda x: x *pret_ex if x >= 0 else -x* pret_def)
+            # df["diferenta"] = df["diferenta"].abs() 
             
             st.subheader(" Situația energetică pe ultima oră")
             # st.dataframe(df[["client", "ora_ro", "consumption_real","production_real","lt_real","consumption_forecast","production_forecast", "lt_forecast", "status"]])
@@ -70,25 +102,68 @@ def show(API_LAST_HOUR, primary, text, card_bg):
                 result = response.json()
 
                 # 1. Afișăm transferurile
-                st.subheader("🔁 Transferuri de energie")
                 transfers = pd.DataFrame(result["transfers"])
-                render_transfer_table(transfers)
+
+                if transfers.empty:
+                    st.subheader("ℹ️ Nu există transferuri de energie în această perioadă.")
+                else:
+                    # 3. Dacă nu e vid, afişezi tabelul de transferuri
+                    st.subheader("🔁 Transferuri de energie")
+                    render_transfer_table(transfers)
 
                 # 2 Afișăm câtă energie mai rămâne de cerut din grid
+                # deficit_final = pd.DataFrame(result["deficit"])
+                # energie_din_grid = deficit_final[deficit_final["Cantitate Energie"] < 0]["Cantitate Energie"].sum()
                 deficit_final = pd.DataFrame(result["deficit"])
-                energie_din_grid = deficit_final[deficit_final["Cantitate Energie"] < 0]["Cantitate Energie"].sum()
-                
+                if "Cantitate Energie" in deficit_final.columns:
+                    energie_din_grid = deficit_final.loc[
+                        deficit_final["Cantitate Energie"] < 0, 
+                        "Cantitate Energie"
+                    ].sum()
+                else:
+                    energie_din_grid = 0.0
 
                 st.subheader("⚡ Energie in deficit -iau energia in gridul national:")
                 st.metric(label="MWh", value=round(abs(energie_din_grid), 3))
 
                 # 3 Afișăm câtă energie a rămas nefolosită în rețea (excedent final)
+                # excedent_final = pd.DataFrame(result["excedent"])
+                # energie_excedent = excedent_final[excedent_final["Cantitate Energie"] > 0]["Cantitate Energie"].sum()
+
                 excedent_final = pd.DataFrame(result["excedent"])
-                energie_excedent = excedent_final[excedent_final["Cantitate Energie"] > 0]["Cantitate Energie"].sum()
+                if "Cantitate Energie" in excedent_final.columns:
+                    energie_excedent = excedent_final.loc[
+                        excedent_final["Cantitate Energie"] > 0,
+                        "Cantitate Energie"
+                    ].sum()
+                else:
+                    energie_excedent = 0.0
 
                 st.subheader("🌞 Energie in excedent -dau energia in gridul national:")
                 st.metric(label="MWh", value=round(energie_excedent, 3))
 
+                
+                st.markdown("---")
+                # st.subheader("Profit: ")
+                # st.metric(label="total ron", value=round(sum(df["valoare"]), 3))
+                # st.metric(label="Valore finala RON", value=round(abs(energie_din_grid* pret_def- energie_excedent*pret_ex), 3))
+                
+                
+                
+
+                # put three metrics in one row
+                col1, col2, col3,col4,col5,col6 = st.columns(6)
+                x=round(sum(df["valoare"]), 3)
+                y=round(abs(energie_din_grid* pret_def- energie_excedent*pret_ex), 3)
+                col1.metric(label="Total RON inainte de agregare", value=x)
+                col2.metric(label=" ", value=None)
+                col3.metric(label="Total RON dupa agregare", value=y)
+                col4.metric(label=" ", value="=")
+                col5.metric(label="Profit RON", 
+                            value=round(x-y, 3))
+                col6.metric(label="Procent", 
+                            value=round((x-y)/x, 3)*100)
+                
                 st.markdown("---")
                 # fig = render_energy_sankey(result["transfers"], pd.DataFrame(result["deficit"]))
                 fig = render_energy_sankey(
@@ -183,25 +258,34 @@ def show(API_LAST_HOUR, primary, text, card_bg):
 
 
 def render_energy_sankey(transfers, deficit_final, excedent_final):
+
+
     # 1. Construim label_map din toți clienții din transferuri
     label_map = {}
     current_index = 0
 
-    for t in transfers:
-        for client in [t["from"], t["to"]]:
-            if client not in label_map:
-                label_map[client] = current_index
-                current_index += 1
+    # daca exista transferuti intre clienti, de execdent sau deficit
+    if transfers:
+        for t in transfers:
+            for client in [t["from"], t["to"]]:
+                if client not in label_map:
+                    label_map[client] = current_index
+                    current_index += 1
 
     # 2. Adaugăm GRID ca ultim nod
     grid_idx = current_index
     label_map["GRID"] = grid_idx
     current_index += 1
 
+    sources = []
+    targets = []
+    values = []
+
     # 3. Construim surse/ținte/valori pentru transferurile între clienți
-    sources = [label_map[t["from"]] for t in transfers]
-    targets = [label_map[t["to"]] for t in transfers]
-    values  = [round(t["energie_transferata"], 3) for t in transfers]
+    if transfers:
+        sources = [label_map[t["from"]] for t in transfers]
+        targets = [label_map[t["to"]] for t in transfers]
+        values  = [round(t["energie_transferata"], 3) for t in transfers]
 
     # 4. Adăugăm transferuri GRID -> clienți în deficit
     for _, row in deficit_final.iterrows():
@@ -236,6 +320,10 @@ def render_energy_sankey(transfers, deficit_final, excedent_final):
         for src, tgt, val in zip(sources, targets, values)
     ]
 
+    num_client_transfers = len(transfers) if transfers else 0
+    link_colors = (["#aaeda8"] * num_client_transfers +  # Green for client-to-client
+                   ["#edd5a8"] * (len(sources) - num_client_transfers))  # Orange for grid transfers
+
     # 8. Plot Sankey
     fig = go.Figure(data=[go.Sankey(
         node=dict(
@@ -252,6 +340,7 @@ def render_energy_sankey(transfers, deficit_final, excedent_final):
             value=values,
             color=["#aaeda8"] * len(transfers) +
                   ["#edd5a8"] * (len(sources) - len(transfers)),
+            # color=link_colors,
             customdata=link_labels,
             hovertemplate='%{customdata}<extra></extra>'
         )
@@ -336,9 +425,9 @@ def render_transfer_table(transfers_df):
 def render_beautiful_table(df):
     # Rotunjim valorile numerice
     df[["consumption_real", "production_real", "lt_real",
-        "consumption_forecast", "production_forecast","diferenta", "lt_forecast"]] = \
+        "consumption_forecast", "production_forecast","diferenta", "lt_forecast","valoare"]] = \
         df[["consumption_real", "production_real", "lt_real",
-            "consumption_forecast", "production_forecast",'diferenta', "lt_forecast"]].round(3)
+            "consumption_forecast", "production_forecast",'diferenta', "lt_forecast","valoare"]].round(3)
 
     # Construim rândurile tabelului
     rows_html = ""
@@ -366,6 +455,7 @@ def render_beautiful_table(df):
                         {row['status']}
                     </span>
                 </td>
+                <td>{row['valoare']}</td>
             </tr>
         """
 
@@ -409,6 +499,7 @@ def render_beautiful_table(df):
                     <th>LT Forecast</th>
                     <th>Cantitate Energie</th>
                     <th>Status</th>
+                    <th>Valoare</th>
                 </tr>
             </thead>
             <tbody>
